@@ -1,0 +1,45 @@
+# ---------- Database (rebuild with: php database/setup.php --reset) ----------
+database/*.sqlite
+database/*.sqlite-wal
+database/*.sqlite-shm
+database/*.sqlite-journal
+*.db
+*.sqlite3
+
+# ---------- Secrets / environment ----------
+.env
+.env.*
+*.pem
+*.key
+
+# ---------- Dependencies ----------
+node_modules/
+vendor/
+
+# ---------- Logs / temp ----------
+*.log
+logs/
+tmp/
+cache/
+
+# ---------- Archives / backups ----------
+*.zip
+*.rar
+*.7z
+*.bak
+*.old
+*~
+
+# ---------- OS files ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Editors / IDEs ----------
+.vscode/
+.idea/
+*.swp
+*.sublime-workspace
+
+# ---------- Keep empty folders ----------
+!.gitkeep

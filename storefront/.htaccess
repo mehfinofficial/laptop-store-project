@@ -1,0 +1,23 @@
+Options -Indexes
+RewriteEngine On
+
+# Block direct access to internal folders
+RewriteRule ^(config|partials)/ - [F,L]
+
+# Real files/folders (css, js, uploads, api) are served as they are
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Fixed pages
+RewriteRule ^products/?$       pages/products.php      [L,QSA]
+RewriteRule ^cart/?$           pages/cart.php          [L,QSA]
+RewriteRule ^checkout/?$       pages/checkout.php      [L,QSA]
+RewriteRule ^order-success/?$  pages/order-success.php [L,QSA]
+RewriteRule ^sitemap\.xml$     pages/sitemap.php       [L]
+
+# Category page:  /laptops
+RewriteRule ^([a-z0-9-]+)/?$   pages/products.php?category=$1 [L,QSA]
+
+# Product page:   /laptops/dell-inspiron-15-3520
+RewriteRule ^([a-z0-9-]+)/([a-z0-9-]+)/?$  pages/product.php?category=$1&slug=$2 [L,QSA]
