@@ -47,9 +47,9 @@ label{display:block;font-weight:500;margin-bottom:.3rem}
   background:#E9E4FA;background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 9%,#fff),color-mix(in srgb,var(--primary) 26%,#fff))}
 .banner h1,.banner h2{font-size:clamp(1rem,4.4vw,1.3rem);line-height:1.2;margin-bottom:.3rem}
 .banner p{margin:0 0 .8rem;color:var(--muted);font-size:.78rem;line-height:1.4}
-.banner-img{aspect-ratio:1/1;display:grid;place-items:center}   /* every banner image gets the same fixed box, whatever its own size or shape */
-.banner-img img{width:100%;height:100%;max-width:none;object-fit:contain;transform:scale(var(--img-scale,1));mix-blend-mode:multiply}  /* contain = never stretched; --img-scale = per-banner zoom; multiply hides the white background */
-.banner-img .ph{width:100%;height:100%;background:transparent;color:var(--primary);opacity:.4}
+.banner-img{aspect-ratio:1/1;position:relative}   /* every banner image gets the same fixed box, whatever its own size or shape */
+.banner-img img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:contain;transform:scale(var(--img-scale,1));mix-blend-mode:multiply}  /* contain = never stretched; --img-scale = per-banner zoom; multiply hides the white background */
+.banner-img .ph{position:absolute;inset:0;width:100%;height:100%;background:transparent;color:var(--primary);opacity:.4}
 
 /* ---------- home: header + search + banner share one big rounded block ---------- */
 .top-block{background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 9%,#fff),color-mix(in srgb,var(--primary) 26%,#fff));border-radius:0 0 32px 32px;padding-bottom:1.1rem;overflow:hidden}
@@ -245,10 +245,11 @@ label{display:block;font-weight:500;margin-bottom:.3rem}
   .section-head h2{font-size:1.5rem}
   .section-head a{font-size:.95rem}
   .cat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;overflow:visible}
-  .cat-tile{flex:none;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:1.3rem .6rem;transition:border-color .15s}
-  .cat-tile:hover{border-color:var(--primary)}
-  .cat-ico{border:0;background:color-mix(in srgb,var(--primary) 9%,#fff)}
-  .cat-ico.has-img{width:92px;height:92px;padding:8px}
+  .cat-tile{flex:none;background:none;border:0;border-radius:0;padding:.3rem .4rem;gap:.6rem}   /* no card around the tile: just the tinted icon + name */
+  .cat-ico{border:0;border-radius:22px;background:color-mix(in srgb,var(--primary) 9%,#fff);transition:background .15s,transform .15s}
+  .cat-ico.has-img{width:96px;height:96px;padding:8px}   /* icon size: change these two numbers (was 92) */
+  .cat-tile:hover .cat-ico{background:color-mix(in srgb,var(--primary) 16%,#fff);transform:translateY(-3px)}
+  .cat-tile:hover .cat-name{color:var(--primary)}
   .cat-name{font-size:.9rem;font-weight:700}
   .perks{display:grid;grid-template-columns:repeat(3,1fr);padding-top:2.2rem;overflow:visible}
   .perk{flex:none;padding:1.2rem}
