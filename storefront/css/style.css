@@ -269,3 +269,30 @@ label{display:block;font-weight:500;margin-bottom:.3rem}
   .card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--primary) 45%,var(--line));box-shadow:0 14px 30px rgba(20,18,43,.10)}
 }
 @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover,.card:active{transform:none}}
+
+/* ---------- free gifts banner (compact, overlapping images) ---------- */
+.gifts{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:.4rem;background:linear-gradient(120deg,var(--primary) 0%,var(--primary-dark) 100%);border-radius:12px;padding:.8rem 0 .8rem 1rem;color:#fff;min-height:124px;box-shadow:none}
+.gifts::before{content:"";position:absolute;z-index:-1;right:-30px;top:-50px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.28) 0%,rgba(255,255,255,0) 68%)}
+.gifts::after{content:"";position:absolute;z-index:-1;left:-40px;bottom:-70px;width:150px;height:150px;border-radius:50%;border:22px solid rgba(255,255,255,.06)}
+.gifts-text{min-width:0;flex:1 1 auto}
+.gifts-tag{display:inline-block;background:var(--sale);color:#fff;font:800 .6rem var(--font-body);letter-spacing:.08em;padding:.18rem .55rem;border-radius:99px}
+.gifts h2{font-size:1.12rem;line-height:1.15;margin:.35rem 0 .2rem;color:#fff}
+.gifts p{margin:0;color:rgba(255,255,255,.85);font-size:.72rem;line-height:1.3}
+.gifts-imgs{position:relative;flex:none;width:178px;height:112px}
+.gifts-imgs img{position:absolute;object-fit:contain;filter:drop-shadow(0 6px 7px rgba(0,0,0,.35));transform:rotate(var(--r,0deg)) translateY(var(--y,0));transition:transform .25s ease}
+.gifts-imgs .g-bp{filter: brightness(1.2);right:4px;bottom:0;width:88px;height:110px;z-index:1;--r:3deg}
+.gifts-imgs .g-kb{left:0;top:9px;width:108px;height:58px;z-index:2;--r:-6deg}
+.gifts-imgs .g-ad{left:25px;bottom:0;width:84px;height:54px;z-index:3;--r:7deg}
+@media (hover:hover){.gifts:hover .g-kb,.gifts:hover .g-ad,.gifts:hover .g-bp{--y:-4px}}
+@media (prefers-reduced-motion:reduce){.gifts-imgs img{transition:none}}
+@media (min-width:900px){
+  .gifts{padding:1.1rem 2.5rem 1.1rem 3rem;border-radius:30px;min-height:170px}
+  .gifts::before{width:420px;height:420px;right:-60px;top:-120px}
+  .gifts-tag{font-size:.72rem}
+  .gifts h2{font-size:2rem;margin:.5rem 0 .35rem}
+  .gifts p{font-size:1.05rem}
+  .gifts-imgs{width:400px;height:146px}
+  .gifts-imgs .g-bp{right:10px;width:118px;height:146px}
+  .gifts-imgs .g-kb{top:6px;width:210px;height:96px}
+  .gifts-imgs .g-ad{left:90px;width:150px;height:84px}
+}

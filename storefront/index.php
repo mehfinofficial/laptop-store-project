@@ -68,6 +68,29 @@ require __DIR__ . '/partials/header.php';
     </section>
 </div><!-- /.top-block -->
 <main>
+    <?php
+    // Compact "Free with every laptop" banner. Image file names live in assets/image/.
+    $gifts = [
+        ['img' => 'bkeybordmouse', 'name' => 'Keyboard & Mouse', 'cls' => 'g-kb'],
+        ['img' => 'badapter',      'name' => 'Laptop Adapter',   'cls' => 'g-ad'],
+        ['img' => 'bbackpack',     'name' => 'Backpack',         'cls' => 'g-bp'],
+    ];
+    ?>
+    <section class="container section">
+        <a class="gifts" href="<?= e(url('laptops')) ?>">
+            <div class="gifts-text">
+                <span class="gifts-tag">FREE GIFTS</span>
+                <h2>Free with every laptop</h2>
+                <p>Keyboard, mouse, adapter &amp; backpack</p>
+            </div>
+            <div class="gifts-imgs">
+                <?php foreach ($gifts as $g): $gi = gift_image($g['img']); if (!$gi) continue; ?>
+                    <img class="<?= e($g['cls']) ?>" src="<?= e($gi) ?>" alt="<?= e($g['name']) ?>" loading="lazy" decoding="async">
+                <?php endforeach; ?>
+            </div>
+        </a>
+    </section>
+
     <section class="container section" id="categories">
         <div class="section-head"><h2>Shop by category</h2><a href="<?= e(url('products')) ?>">View all</a></div>
         <div class="cat-row">

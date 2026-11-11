@@ -237,6 +237,16 @@ function icon(string $name): string {
    and <name> is the category slug in singular: laptops -> claptop.png, gaming -> cgaming.png, chargers -> ccharger.png.
    Also accepts categories/<slug>.png. Extensions: png, webp, jpg, jpeg, avif.
    No file = the line icon from cat_icon() is shown instead, so categories can get photos one by one. */
+/** Find a gift image in assets/image by base name (any common extension); null if missing. */
+function gift_image(string $name): ?string {
+    foreach (['png', 'webp', 'jpg', 'jpeg', 'avif'] as $ext) {
+        if (is_file(__DIR__ . '/../assets/image/' . $name . '.' . $ext)) {
+            return asset('assets/image/' . $name . '.' . $ext);
+        }
+    }
+    return null;
+}
+
 function cat_image(string $slug): ?string {
     $slug = preg_replace('/[^a-z0-9-]/', '', strtolower($slug));
     if ($slug === '') return null;
