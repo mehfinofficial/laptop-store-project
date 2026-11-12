@@ -15,11 +15,33 @@ $jsonLd = [
     'telephone' => setting('phone'),
     'address'   => ['@type' => 'PostalAddress', 'streetAddress' => setting('address'), 'addressLocality' => setting('city')],
 ];
+/**
+ * Text highlighter for slide titles and subtitles.
+ *  - Wrap words in *stars* to colour them:  "*Student* discount on laptops"
+ *  - Highlights alternate between two colour sets (a, b) that change per slide (see style.css).
+ *  - If a title has no stars, any price like ₹14,999 is highlighted automatically.
+ */
+function hl_title(string $text): string {
+    $t = e($text);
+    if (strpos($t, '*') !== false) {
+        $i = 0;
+        return preg_replace_callback('/\*(.+?)\*/u', function ($m) use (&$i) {
+            return '<span class="hl hl-' . (($i++ % 2) ? 'b' : 'a') . '">' . $m[1] . '</span>';
+        }, $t);
+    }
+    return preg_replace('/₹\s?[\d,]+/u', '<span class="hl hl-b">$0</span>', $t);
+}
+/** Subtitle: prices (₹23,999) are shown bold, so they stand out. */
+function hl_sub(string $text): string {
+    return preg_replace('/₹\s?[\d,]+/u', '<b class="sub-price">$0</b>', e($text));
+}
+
 $slides = [[
     'title'    => setting('hero_title'),
     'subtitle' => setting('hero_subtitle'),
     'cta'      => setting('hero_cta', 'Shop now'),
     'link'     => 'products',
+    'hero'     => true,                    // only this first slide gets the trust row
     'img'      => $img,
     'theme'    => '',
     'scale'    => max(40, min(160, (int)setting('hero_image_scale', '100'))) / 100,
@@ -38,11 +60,12 @@ require __DIR__ . '/partials/header.php';
         <div class="slider" data-slider>
             <div class="slides">
                 <?php foreach ($slides as $i => $sl): ?>
-                <div class="banner slide"<?= $sl['theme'] ? ' data-theme="' . e($sl['theme']) . '"' : '' ?><?= $sl['scale'] != 1 ? ' style="--img-scale:' . $sl['scale'] . '"' : '' ?>>
+                <?php $isHero = !empty($sl['hero']); ?>
+                <div class="banner slide<?= $isHero ? ' hero-slide' : '' ?>"<?= $sl['theme'] ? ' data-theme="' . e($sl['theme']) . '"' : '' ?><?= $sl['scale'] != 1 ? ' style="--img-scale:' . $sl['scale'] . '"' : '' ?>>
                     <div class="banner-text">
                         <?php $tag = $i === 0 ? 'h1' : 'h2'; ?>
-                        <<?= $tag ?>><?= e($sl['title']) ?></<?= $tag ?>>
-                        <p><?= e($sl['subtitle']) ?></p>
+                        <<?= $tag ?>><?= hl_title($sl['title']) ?></<?= $tag ?>>
+                        <p><?= hl_sub($sl['subtitle']) ?></p>
                         <a class="btn pill" href="<?= e(url($sl['link'])) ?>"><?= e($sl['cta']) ?></a>
                     </div>
                     <div class="banner-img">
@@ -54,6 +77,13 @@ require __DIR__ . '/partials/header.php';
                             <?= render_image(null, 'Laptop') ?>
                         <?php endif; ?>
                     </div>
+                    <?php if ($isHero): ?>
+                    <ul class="hero-trust">
+                        <li><?= icon('cash') ?><?= e(setting('feature1_title', 'Cash on delivery')) ?></li>
+                        <li><?= icon('shield') ?><?= e(setting('feature2_title', 'Brand warranty')) ?></li>
+                        <li><?= icon('tag') ?>Student discount</li>
+                    </ul>
+                    <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
             </div>
