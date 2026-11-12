@@ -84,7 +84,8 @@ require __DIR__ . '/partials/header.php';
                 <p>Keyboard, mouse, adapter &amp; backpack</p>
             </div>
             <div class="gifts-imgs">
-                <?php foreach ($gifts as $g): $gi = gift_image($g['img']); if (!$gi) continue; ?>
+                <?php $n = 0; foreach ($gifts as $g): $gi = gift_image($g['img']); if (!$gi) continue; ?>
+                    <?php if ($n++): ?><span class="g-plus" aria-hidden="true">+</span><?php endif; ?>
                     <img class="<?= e($g['cls']) ?>" src="<?= e($gi) ?>" alt="<?= e($g['name']) ?>" loading="lazy" decoding="async">
                 <?php endforeach; ?>
             </div>
