@@ -169,6 +169,12 @@ function rating_html(array $p): string {
          . '<b>' . e(number_format($r, 1)) . '</b>' . ($n > 0 ? '<i>(' . $n . ')</i>' : '') . '</span>';
 }
 
+/* "Pre-owned" pill, shown on the image when products.is_preowned = 1. Text comes from settings.preowned_label. */
+function preowned_badge(array $p): string {
+    if (empty($p['is_preowned'])) return '';
+    return '<span class="badge-preowned">' . e(setting('preowned_label', 'Pre-owned')) . '</span>';
+}
+
 /* ---------- Product card (used on home, listing, related) ---------- */
 function product_card(array $p): void {
     $href  = url($p['category_slug'] . '/' . $p['slug']);
@@ -181,7 +187,7 @@ function product_card(array $p): void {
     $rate  = rating_html($p);
     ?>
     <article class="card<?= $out ? ' is-out' : '' ?>">
-        <a class="thumb" href="<?= e($href) ?>" tabindex="-1" aria-hidden="true"><?= render_image($p['image'], $p['name']) ?></a>
+        <a class="thumb" href="<?= e($href) ?>" tabindex="-1" aria-hidden="true"><?= render_image($p['image'], $p['name']) ?><?= preowned_badge($p) ?></a>
         <div class="card-body">
             <p class="brand"><?= e($p['brand']) ?></p>
             <h3><a href="<?= e($href) ?>"><?= e($p['name']) ?></a></h3>

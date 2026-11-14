@@ -44,6 +44,22 @@ function get_banners(): array {
     }
 }
 
+/* ---------- Homepage content blocks (edited in the database, shown only when they have rows) ---------- */
+function get_reviews(int $limit = 6): array {
+    try {
+        return db()->query('SELECT * FROM reviews WHERE is_active = 1 ORDER BY sort_order, id DESC LIMIT ' . (int)$limit)->fetchAll();
+    } catch (Throwable $e) {
+        return [];   // table not created yet: section is simply hidden
+    }
+}
+function get_faqs(): array {
+    try {
+        return db()->query('SELECT * FROM faqs WHERE is_active = 1 ORDER BY sort_order, id')->fetchAll();
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
 /* ---------- Categories ---------- */
 function get_categories(): array {
     static $cache = null;
@@ -72,6 +88,7 @@ function product_where(array $f): array {
     $args  = [];
     if (!empty($f['category'])) { $where[] = 'c.slug = ?';  $args[] = $f['category']; }
     if (!empty($f['deals']))    { $where[] = 'p.old_price IS NOT NULL AND p.old_price > p.price'; }
+    if (!empty($f['max_price'])) { $where[] = 'p.price <= ?'; $args[] = (int)$f['max_price']; }
     if (!empty($f['q']))        { $where[] = '(p.name LIKE ? OR p.brand LIKE ? OR p.description LIKE ?)';
                                   $like = '%' . $f['q'] . '%'; array_push($args, $like, $like, $like); }
     return [implode(' AND ', $where), $args];

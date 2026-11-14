@@ -99,3 +99,20 @@ document.querySelectorAll('.qty').forEach(function (box) {
     document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
     start();
 })();
+
+/* Perks: gentle fade-up the first time they scroll into view */
+(function () {
+    var perks = document.querySelectorAll('.perk');
+    if (!perks.length || !('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            var el = en.target, i = Array.prototype.indexOf.call(perks, el);
+            io.unobserve(el);
+            el.style.transitionDelay = (i * 90) + 'ms';
+            el.classList.add('in');
+            setTimeout(function () { el.classList.remove('reveal', 'in'); el.style.transitionDelay = ''; }, 800 + i * 90);   // hand control back to hover styles
+        });
+    }, { threshold: 0 });
+    perks.forEach(function (el) { el.classList.add('reveal'); io.observe(el); });
+})();

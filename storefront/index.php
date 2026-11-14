@@ -143,6 +143,26 @@ require __DIR__ . '/partials/header.php';
         <?php if (!$featured): ?><p class="muted">No featured products yet.</p><?php endif; ?>
     </section>
 
+    <?php $fi = gift_image('studenthelp'); ?>
+    <section class="container section">
+        <div class="finder">
+            <div class="finder-text">
+                <h2>Not sure which laptop to buy?</h2>
+                <p>Tell us your budget and use. We'll help you pick.</p>
+            </div>
+            <?php if ($fi): ?><img class="finder-img" src="<?= e($fi) ?>" alt="" loading="lazy" decoding="async"><?php endif; ?>
+        </div>
+    </section>
+
+    <?php if ($laptops): ?>
+    <section class="container section">
+        <div class="section-head"><h2>Latest laptops</h2><a href="<?= e(url('laptops')) ?>">View all</a></div>
+        <div class="grid">
+            <?php foreach ($laptops as $p) product_card($p); ?>
+        </div>
+    </section>
+    <?php endif; ?>
+
     <section class="container perks">
         <?php $perkIcons = [1 => 'cash', 2 => 'shield', 3 => 'phone'];
         for ($i = 1; $i <= 3; $i++): if (!setting("feature{$i}_title")) continue; ?>
@@ -153,11 +173,44 @@ require __DIR__ . '/partials/header.php';
         <?php endfor; ?>
     </section>
 
-    <?php if ($laptops): ?>
+    <?php if (setting('address')):
+        $mapUrl = preg_match('#^https?://#i', setting('map_link'))
+            ? setting('map_link')
+            : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode(trim(setting('address') . ' ' . setting('city'))); ?>
     <section class="container section">
-        <div class="section-head"><h2>Latest laptops</h2><a href="<?= e(url('laptops')) ?>">View all</a></div>
-        <div class="grid">
-            <?php foreach ($laptops as $p) product_card($p); ?>
+        <div class="visit">
+            <div>
+                <h2><?= e(setting('store_visit_title', 'Visit our store')) ?></h2>
+                <p class="visit-addr"><?= icon('pin') ?><span><?= nl2br(e(setting('address'))) ?><?= setting('city') ? ', ' . e(setting('city')) : '' ?></span></p>
+                <?php if (setting('opening_hours')): ?><p class="visit-hours"><?= e(setting('opening_hours')) ?></p><?php endif; ?>
+            </div>
+            <a class="btn pill" href="<?= e($mapUrl) ?>" target="_blank" rel="noopener">Get directions</a>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <?php $reviews = get_reviews(6); if ($reviews): ?>
+    <section class="container section">
+        <div class="section-head"><h2><?= e(setting('reviews_title', 'What customers say')) ?></h2></div>
+        <div class="reviews">
+            <?php foreach ($reviews as $r): $n = max(1, min(5, (int)$r['rating'])); ?>
+            <figure class="review">
+                <span class="stars" role="img" aria-label="<?= $n ?> out of 5"><?= str_repeat('★', $n) ?></span>
+                <p><?= e($r['text']) ?></p>
+                <figcaption><?= e($r['name']) ?></figcaption>
+            </figure>
+            <?php endforeach; ?>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <?php $faqs = get_faqs(); if ($faqs): ?>
+    <section class="container section">
+        <div class="section-head"><h2><?= e(setting('faq_title', 'Questions, answered')) ?></h2></div>
+        <div class="faq">
+            <?php foreach ($faqs as $q): ?>
+            <details><summary><?= e($q['question']) ?></summary><p><?= nl2br(e($q['answer'])) ?></p></details>
+            <?php endforeach; ?>
         </div>
     </section>
     <?php endif; ?>
