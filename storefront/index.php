@@ -6,6 +6,7 @@ $shown    = array_column($featured, 'id');
 $laptops  = array_slice(array_filter(get_products(['category' => 'laptops'], 16), fn($x) => !in_array($x['id'], $shown)), 0, 4);
 $cats     = get_categories();
 $img      = hero_image();
+$finder   = finder_options();   // laptop finder popup (null = no laptops yet)
 
 $jsonLd = [
     '@context'  => 'https://schema.org',
@@ -145,14 +146,14 @@ require __DIR__ . '/partials/header.php';
 
     <?php $fi = gift_image('studenthelp'); ?>
     <section class="container section">
-        <div class="finder">
+        <a class="finder" href="<?= e(url('laptops')) ?>"<?= $finder ? ' data-finder-open aria-haspopup="dialog"' : '' ?>>
             <div class="finder-text">
                 <h2>Can't decide which laptop?</h2>
                 <p>Tell me your budget and I'll help you pick.</p>
                 <span class="finder-cta">Find your laptop <?= icon('chevron') ?></span>
             </div>
             <?php if ($fi): ?><img class="finder-img" src="<?= e($fi) ?>" alt="" loading="lazy" decoding="async"><?php endif; ?>
-        </div>
+        </a>
     </section>
 
     <?php if ($laptops): ?>
@@ -160,32 +161,6 @@ require __DIR__ . '/partials/header.php';
         <div class="section-head"><h2>Latest laptops</h2><a href="<?= e(url('laptops')) ?>">View all</a></div>
         <div class="grid">
             <?php foreach ($laptops as $p) product_card($p); ?>
-        </div>
-    </section>
-    <?php endif; ?>
-
-    <section class="container perks">
-        <?php $perkIcons = [1 => 'cash', 2 => 'shield', 3 => 'phone'];
-        for ($i = 1; $i <= 3; $i++): if (!setting("feature{$i}_title")) continue; ?>
-            <div class="perk">
-                <span class="perk-ico"><?= icon($perkIcons[$i]) ?></span>
-                <div><h3><?= e(setting("feature{$i}_title")) ?></h3><p><?= e(setting("feature{$i}_text")) ?></p></div>
-            </div>
-        <?php endfor; ?>
-    </section>
-
-    <?php if (setting('address')):
-        $mapUrl = preg_match('#^https?://#i', setting('map_link'))
-            ? setting('map_link')
-            : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode(trim(setting('address') . ' ' . setting('city'))); ?>
-    <section class="container section">
-        <div class="visit">
-            <div>
-                <h2><?= e(setting('store_visit_title', 'Visit our store')) ?></h2>
-                <p class="visit-addr"><?= icon('pin') ?><span><?= nl2br(e(setting('address'))) ?><?= setting('city') ? ', ' . e(setting('city')) : '' ?></span></p>
-                <?php if (setting('opening_hours')): ?><p class="visit-hours"><?= e(setting('opening_hours')) ?></p><?php endif; ?>
-            </div>
-            <a class="btn pill" href="<?= e($mapUrl) ?>" target="_blank" rel="noopener">Get directions</a>
         </div>
     </section>
     <?php endif; ?>
@@ -215,5 +190,22 @@ require __DIR__ . '/partials/header.php';
         </div>
     </section>
     <?php endif; ?>
+
+    <?php if (setting('address')):
+        $mapUrl = preg_match('#^https?://#i', setting('map_link'))
+            ? setting('map_link')
+            : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode(trim(setting('address') . ' ' . setting('city'))); ?>
+    <section class="container section">
+        <div class="visit">
+            <div>
+                <h2><?= e(setting('store_visit_title', 'Visit our store')) ?></h2>
+                <p class="visit-addr"><?= icon('pin') ?><span><?= nl2br(e(setting('address'))) ?><?= setting('city') ? ', ' . e(setting('city')) : '' ?></span></p>
+                <?php if (setting('opening_hours')): ?><p class="visit-hours"><?= e(setting('opening_hours')) ?></p><?php endif; ?>
+            </div>
+            <a class="btn pill" href="<?= e($mapUrl) ?>" target="_blank" rel="noopener">Get directions</a>
+        </div>
+    </section>
+    <?php endif; ?>
 </main>
+<?php require __DIR__ . '/partials/finder.php'; ?>
 <?php require __DIR__ . '/partials/footer.php'; ?>

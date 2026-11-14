@@ -89,6 +89,20 @@ function product_where(array $f): array {
     if (!empty($f['category'])) { $where[] = 'c.slug = ?';  $args[] = $f['category']; }
     if (!empty($f['deals']))    { $where[] = 'p.old_price IS NOT NULL AND p.old_price > p.price'; }
     if (!empty($f['max_price'])) { $where[] = 'p.price <= ?'; $args[] = (int)$f['max_price']; }
+    if (!empty($f['brands'])) {   // brand slugs from the laptop finder -> real brand names
+        $names = brand_names_for($f['brands']);
+        if ($names) { $where[] = 'p.brand IN (' . implode(',', array_fill(0, count($names), '?')) . ')'; array_push($args, ...$names); }
+        else        { $where[] = '0'; }
+    }
+    if (!empty($f['uses'])) {     // use-case slugs; a laptop matches if it has ANY of them
+        $where[] = 'p.id IN (SELECT pu.product_id FROM product_use_cases pu JOIN use_cases u ON u.id = pu.use_case_id
+                             WHERE u.is_active = 1 AND u.slug IN (' . implode(',', array_fill(0, count($f['uses']), '?')) . '))';
+        array_push($args, ...array_values($f['uses']));
+    }
+    if (!empty($f['cpus'])) {     // processor families (core-i5, ryzen-5, apple-m ...)
+        $ids = product_ids_for_cpus($f['cpus']);
+        $where[] = $ids ? 'p.id IN (' . implode(',', $ids) . ')' : '0';
+    }
     if (!empty($f['q']))        { $where[] = '(p.name LIKE ? OR p.brand LIKE ? OR p.description LIKE ?)';
                                   $like = '%' . $f['q'] . '%'; array_push($args, $like, $like, $like); }
     return [implode(' AND ', $where), $args];
@@ -190,4 +204,101 @@ function get_order_by_number(string $number): ?array {
     $it->execute([$o['id']]);
     $o['items'] = $it->fetchAll();
     return $o;
+}
+
+
+/* ---------- Laptop finder (options are built from the laptops that exist) ---------- */
+
+/* "Intel Core i5-1235U" -> ['core-i5', 'Intel Core i5'].  Unknown chips -> null (no processor pill). */
+function cpu_family(?string $cpu): ?array {
+    $c = strtolower((string)$cpu);
+    if ($c === '') return null;
+    if (preg_match('/core\s*ultra/', $c))        return ['core-ultra', 'Intel Core Ultra'];
+    if (preg_match('/core\s*(i[3579])\b/', $c, $m)) return ['core-' . $m[1], 'Intel Core ' . $m[1]];
+    if (preg_match('/ryzen\s*([3579])\b/', $c, $m)) return ['ryzen-' . $m[1], 'AMD Ryzen ' . $m[1]];
+    if (preg_match('/\bapple\b|\bm[1-9]\b/', $c)) return ['apple-m', 'Apple M-series'];
+    return null;
+}
+
+/* Active laptops with the little we need for the finder. */
+function finder_laptops(): array {
+    static $rows = null;
+    if ($rows !== null) return $rows;
+    try {
+        $st = db()->prepare("SELECT p.id, p.brand, p.price, p.specs FROM products p JOIN categories c ON c.id = p.category_id
+                             WHERE p.is_active = 1 AND c.slug = 'laptops' ORDER BY p.price");
+        $st->execute();
+        $rows = $st->fetchAll();
+        $uses = [];
+        foreach (db()->query('SELECT pu.product_id, u.slug FROM product_use_cases pu JOIN use_cases u ON u.id = pu.use_case_id WHERE u.is_active = 1') as $r) {
+            $uses[$r['product_id']][] = $r['slug'];
+        }
+    } catch (Throwable $e) {
+        return $rows = [];
+    }
+    foreach ($rows as &$r) {
+        $spec = json_decode((string)$r['specs'], true) ?: [];
+        $fam  = cpu_family($spec['Processor'] ?? '');
+        $r['cpu']  = $fam ? $fam[0] : '';
+        $r['cpu_label'] = $fam ? $fam[1] : '';
+        $r['brand_slug'] = slugify((string)$r['brand']);
+        $r['uses'] = $uses[$r['id']] ?? [];
+    }
+    return $rows;
+}
+
+function brand_names_for(array $slugs): array {
+    $out = [];
+    foreach (finder_laptops() as $r) if (in_array($r['brand_slug'], $slugs, true)) $out[$r['brand']] = true;
+    return array_keys($out);
+}
+
+function product_ids_for_cpus(array $fams): array {
+    $ids = [];
+    foreach (finder_laptops() as $r) if ($r['cpu'] !== '' && in_array($r['cpu'], $fams, true)) $ids[] = (int)$r['id'];
+    return $ids;
+}
+
+/* Everything the popup needs. Returns null when there are no laptops (popup is then not shown). */
+function finder_options(): ?array {
+    $rows = finder_laptops();
+    if (!$rows) return null;
+
+    $prices = array_map(fn($r) => (float)$r['price'], $rows);
+    $step = 5000;
+    $min  = (int)(floor(min($prices) / $step) * $step);
+    $max  = (int)(ceil(max($prices) / $step) * $step);
+    if ($max <= $min) $max = $min + $step;
+
+    $brands = [];
+    foreach ($rows as $r) if ($r['brand'] !== '' && $r['brand'] !== null) $brands[$r['brand_slug']] = $r['brand'];
+    asort($brands, SORT_NATURAL | SORT_FLAG_CASE);
+
+    $cpuOrder = ['core-i3', 'core-i5', 'core-i7', 'core-i9', 'core-ultra', 'ryzen-3', 'ryzen-5', 'ryzen-7', 'ryzen-9', 'apple-m'];
+    $cpus = [];
+    foreach ($rows as $r) if ($r['cpu'] !== '') $cpus[$r['cpu']] = $r['cpu_label'];
+    uksort($cpus, fn($a, $b) => (array_search($a, $cpuOrder) <=> array_search($b, $cpuOrder)));
+
+    $uses = [];
+    try {
+        $have = array_unique(array_merge(...array_column($rows, 'uses') ?: [[]]));
+        foreach (db()->query('SELECT slug, name FROM use_cases WHERE is_active = 1 ORDER BY sort_order, id') as $u) {
+            if (in_array($u['slug'], $have, true)) $uses[$u['slug']] = $u['name'];
+        }
+    } catch (Throwable $e) {}
+
+    return [
+        'min' => $min, 'max' => $max, 'step' => $step,
+        'brands' => $brands, 'cpus' => $cpus, 'uses' => $uses,
+        'data' => array_map(fn($r) => ['p' => (int)$r['price'], 'b' => $r['brand_slug'], 'c' => $r['cpu'], 'u' => $r['uses']], $rows),
+    ];
+}
+
+/* Read ?brand=asus,dell or ?brand[]=asus&brand[]=dell into a clean list of slugs. */
+function list_param(string $name): array {
+    $v = $_GET[$name] ?? [];
+    if (is_string($v)) $v = explode(',', $v);
+    if (!is_array($v)) return [];
+    $v = array_map(fn($x) => preg_replace('/[^a-z0-9-]/', '', strtolower((string)$x)), $v);
+    return array_values(array_unique(array_filter($v, fn($x) => $x !== '')));
 }

@@ -116,3 +116,96 @@ document.querySelectorAll('.qty').forEach(function (box) {
     }, { threshold: 0 });
     perks.forEach(function (el) { el.classList.add('reveal'); io.observe(el); });
 })();
+
+/* Laptop finder popup: pills + budget slider, live match count, then jumps to /laptops with the filters in the URL */
+(function () {
+    var modal = document.getElementById('finderModal');
+    if (!modal) return;
+    var backdrop = document.getElementById('fmBackdrop');
+    var form = modal.querySelector('form');
+    var range = document.getElementById('fmRange');
+    var budget = document.getElementById('fmBudget');
+    var go = document.getElementById('fmGo');
+    var data = [];
+    try { data = JSON.parse(document.getElementById('finderData').textContent) || []; } catch (e) {}
+    var sym = modal.getAttribute('data-sym') || '';
+    var top = parseInt(modal.getAttribute('data-max'), 10);
+    var opener = null;
+
+    function money(n) { return sym + Number(n).toLocaleString('en-IN'); }
+    function picked(name) {
+        return Array.prototype.map.call(form.querySelectorAll('input[name="' + name + '[]"]:checked'), function (i) { return i.value; });
+    }
+    function state() {
+        var v = parseInt(range.value, 10);
+        return { max: v >= top ? 0 : v, cpu: picked('cpu'), use: picked('use'), brand: picked('brand') };
+    }
+    function count(s) {
+        return data.filter(function (l) {
+            if (s.max && l.p > s.max) return false;
+            if (s.brand.length && s.brand.indexOf(l.b) < 0) return false;
+            if (s.cpu.length && s.cpu.indexOf(l.c) < 0) return false;
+            if (s.use.length && !l.u.some(function (u) { return s.use.indexOf(u) > -1; })) return false;
+            return true;
+        }).length;
+    }
+    function refresh() {
+        var s = state();
+        var pct = (range.value - range.min) / (range.max - range.min) * 100;
+        range.style.setProperty('--pct', pct + '%');
+        budget.textContent = s.max ? 'Up to ' + money(s.max) : 'Any budget';
+        var n = count(s);
+        go.disabled = n === 0;
+        go.textContent = n === 0 ? 'No laptops match' : 'Show ' + n + ' laptop' + (n === 1 ? '' : 's');
+    }
+
+    function open(from) {
+        opener = from || null;
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        backdrop.classList.add('open');
+        document.body.classList.add('sheet-open');
+        refresh();
+        setTimeout(function () { range.focus({ preventScroll: true }); }, 60);
+    }
+    function close() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        backdrop.classList.remove('open');
+        document.body.classList.remove('sheet-open');
+        if (opener) opener.focus({ preventScroll: true });
+    }
+
+    document.querySelectorAll('[data-finder-open]').forEach(function (a) {
+        a.addEventListener('click', function (e) { e.preventDefault(); open(a); });
+    });
+    modal.querySelectorAll('[data-finder-close]').forEach(function (b) { b.addEventListener('click', close); });
+    backdrop.addEventListener('click', close);
+    document.addEventListener('keydown', function (e) {
+        if (!modal.classList.contains('open')) return;
+        if (e.key === 'Escape') { close(); return; }
+        if (e.key === 'Tab') {   // keep focus inside the popup
+            var f = modal.querySelectorAll('button:not([disabled]),input');
+            var vis = Array.prototype.filter.call(f, function (x) { return x.offsetParent !== null || x === range; });
+            if (!vis.length) return;
+            var first = vis[0], last = vis[vis.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    });
+
+    form.addEventListener('input', refresh);
+    document.getElementById('fmReset').addEventListener('click', function () {
+        form.reset();
+        range.value = range.max;
+        refresh();
+    });
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var s = state(), qs = [];
+        if (s.max) qs.push('max=' + s.max);
+        ['use', 'cpu', 'brand'].forEach(function (k) { if (s[k].length) qs.push(k + '=' + s[k].map(encodeURIComponent).join(',')); });
+        window.location.href = form.getAttribute('action') + (qs.length ? '?' + qs.join('&') : '');
+    });
+    refresh();
+})();
