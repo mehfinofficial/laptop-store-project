@@ -147,8 +147,9 @@ require __DIR__ . '/partials/header.php';
     <section class="container section">
         <div class="finder">
             <div class="finder-text">
-                <h2>Not sure which laptop to buy?</h2>
-                <p>Tell us your budget and use. We'll help you pick.</p>
+                <h2>Can't decide which laptop?</h2>
+                <p>Tell me your budget and I'll help you pick.</p>
+                <span class="finder-cta">Find your laptop <?= icon('chevron') ?></span>
             </div>
             <?php if ($fi): ?><img class="finder-img" src="<?= e($fi) ?>" alt="" loading="lazy" decoding="async"><?php endif; ?>
         </div>

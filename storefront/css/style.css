@@ -342,12 +342,17 @@ label{display:block;font-weight:500;margin-bottom:.3rem}
   .gifts-imgs .g-kb,.gifts-imgs .g-ad,.gifts-imgs .g-bp{position:static;left:auto;right:auto;top:auto;bottom:auto;height:110px;width:auto;max-width:none;--r:0deg}
 }
 
-/* ---------- Laptop finder banner (same size as .gifts; not clickable yet) ---------- */
-.finder{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:.4rem;background:color-mix(in srgb,var(--primary) 5%,var(--surface));border:1px solid var(--line);border-radius:12px;padding:.8rem 0 0 1rem;min-height:124px;color:var(--ink)}
+/* ---------- Laptop finder banner (same look/size as .gifts) ---------- */
+.finder{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:.4rem;background:linear-gradient(120deg,var(--primary) 0%,var(--primary-dark) 100%);border-radius:12px;padding:.8rem 0 0 1rem;min-height:124px;color:#fff;box-shadow:none}
+.finder::before{content:"";position:absolute;z-index:-1;right:-30px;top:-50px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.28) 0%,rgba(255,255,255,0) 68%)}
+.finder::after{content:"";position:absolute;z-index:-1;left:-40px;bottom:-70px;width:150px;height:150px;border-radius:50%;border:22px solid rgba(255,255,255,.06)}
 .finder-text{min-width:0;flex:1 1 auto;padding-bottom:.8rem}
-.finder h2{font-size:1.12rem;line-height:1.15;margin:0 0 .3rem}
-.finder p{margin:0;color:var(--muted);font-size:.72rem;line-height:1.3}
-.finder-img{flex:none;align-self:flex-end;height:112px;width:auto;margin-right:.8rem;object-fit:contain}
+.finder h2{font-size:1rem;line-height:1.15;margin:0 0 .3rem;color:#fff}
+.finder p{margin:0;color:rgba(255,255,255,.85);font-size:.72rem;line-height:1.3}
+.finder-cta{display:inline-flex;align-items:center;gap:.2rem;margin-top:.55rem;background:#fff;color:var(--primary-dark);font:700 .72rem var(--font-body);padding:.32rem .5rem .32rem .8rem;border-radius:9px;box-shadow:none;transition:transform .2s ease}
+.finder-cta .ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s ease}
+@media (hover:hover){.finder:hover .finder-cta .ico{transform:translateX(3px)}}
+.finder-img{flex:none;align-self:flex-end;height:112px;width:auto;margin-right:.8rem;object-fit:contain;filter:drop-shadow(0 6px 7px rgba(0,0,0,.35))}
 
 /* ---------- Visit our store ---------- */
 .visit{display:flex;flex-direction:column;align-items:flex-start;gap:1rem;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:1.1rem 1.2rem}
@@ -377,8 +382,11 @@ label{display:block;font-weight:500;margin-bottom:.3rem}
 @media (min-width:900px){
   .finder{padding:1.1rem 0 0 3rem;border-radius:30px;min-height:170px}
   .finder-text{padding-bottom:1.1rem}
-  .finder h2{font-size:2rem;margin-bottom:.35rem}
+  .finder h2{font-size:1.6rem;margin-bottom:.35rem}
   .finder p{font-size:1.05rem}
+  .finder::before{width:420px;height:420px;right:-60px;top:-120px}
+  .finder-cta{font-size:.95rem;padding:.5rem .7rem .5rem 1.2rem;margin-top:.9rem}
+  .finder-cta .ico{width:20px;height:20px}
   .finder-img{height:160px;margin-right:3rem}
   .visit{flex-direction:row;align-items:center;justify-content:space-between;padding:1.6rem 2rem}
   .visit h2{font-size:1.5rem}
