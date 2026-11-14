@@ -209,3 +209,47 @@ document.querySelectorAll('.qty').forEach(function (box) {
     });
     refresh();
 })();
+
+
+/* Reviews: centred carousel on phones. Swiping is CSS scroll-snap; JS only marks the centred card and builds the dots. */
+(function () {
+    var track = document.querySelector('[data-reviews]');
+    if (!track) return;
+    var cards = track.children, count = cards.length, cur = -1, ticking = false;
+    if (count < 2) { if (count) cards[0].classList.add('is-active'); return; }
+    var wrap = document.createElement('div');
+    wrap.className = 'dots review-dots';
+    var dots = [];
+    for (var n = 0; n < count; n++) {
+        (function (n) {
+            var d = document.createElement('button');
+            d.type = 'button'; d.className = 'dot'; d.setAttribute('aria-label', 'Review ' + (n + 1));
+            d.addEventListener('click', function () {
+                var c = cards[n];
+                track.scrollTo({ left: c.offsetLeft - (track.clientWidth - c.offsetWidth) / 2, behavior: 'smooth' });
+            });
+            wrap.appendChild(d); dots.push(d);
+        })(n);
+    }
+    track.parentNode.insertBefore(wrap, track.nextSibling);
+    function mark() {
+        var mid = track.scrollLeft + track.clientWidth / 2, best = 0, bestDist = Infinity;
+        for (var i = 0; i < count; i++) {
+            var dist = Math.abs(cards[i].offsetLeft + cards[i].offsetWidth / 2 - mid);
+            if (dist < bestDist) { bestDist = dist; best = i; }
+        }
+        if (best === cur) return;
+        cur = best;
+        for (var k = 0; k < count; k++) {
+            cards[k].classList.toggle('is-active', k === best);
+            dots[k].classList.toggle('active', k === best);
+        }
+    }
+    track.addEventListener('scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () { ticking = false; mark(); });
+    }, { passive: true });
+    window.addEventListener('resize', mark);
+    mark();
+})();

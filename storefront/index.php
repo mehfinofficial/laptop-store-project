@@ -8,6 +8,14 @@ $cats     = get_categories();
 $img      = hero_image();
 $finder   = finder_options();   // laptop finder popup (null = no laptops yet)
 
+/* two-tone section title: first half dark, second half in the brand blue on its own line */
+function section_title(string $t): string {
+    $w = preg_split('/\s+/', trim($t));
+    if (count($w) < 2) return '<span class="hl-line">' . e($t) . '</span>';
+    $k = (int)ceil(count($w) / 2);
+    return e(implode(' ', array_slice($w, 0, $k))) . '<span class="hl-line">' . e(implode(' ', array_slice($w, $k))) . '</span>';
+}
+
 $jsonLd = [
     '@context'  => 'https://schema.org',
     '@type'     => 'Store',
@@ -166,9 +174,9 @@ require __DIR__ . '/partials/header.php';
     <?php endif; ?>
 
     <?php $reviews = get_reviews(6); if ($reviews): ?>
-    <section class="container section">
-        <div class="section-head"><h2><?= e(setting('reviews_title', 'What customers say')) ?></h2></div>
-        <div class="reviews">
+    <section class="container section reviews-sec">
+        <div class="section-head center"><h2><?= section_title('Customer Reviews') ?></h2></div>
+        <div class="reviews" data-reviews>
             <?php foreach ($reviews as $r): $n = max(1, min(5, (int)$r['rating'])); ?>
             <figure class="review">
                 <span class="stars" role="img" aria-label="<?= $n ?> out of 5"><?= str_repeat('★', $n) ?></span>
@@ -180,9 +188,10 @@ require __DIR__ . '/partials/header.php';
     </section>
     <?php endif; ?>
 
+    <div class="fade-zone">
     <?php $faqs = get_faqs(); if ($faqs): ?>
     <section class="container section">
-        <div class="section-head"><h2><?= e(setting('faq_title', 'Questions, answered')) ?></h2></div>
+        <div class="section-head center"><h2><?= section_title('FAQ') ?></h2></div>
         <div class="faq">
             <?php foreach ($faqs as $q): ?>
             <details><summary><?= e($q['question']) ?></summary><p><?= nl2br(e($q['answer'])) ?></p></details>
@@ -197,6 +206,9 @@ require __DIR__ . '/partials/header.php';
             : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode(trim(setting('address') . ' ' . setting('city'))); ?>
     <section class="container section">
         <div class="visit">
+            <?php $locImg = glob(__DIR__ . '/assets/image/location.*'); if ($locImg): ?>
+            <img class="visit-img" src="<?= e(asset('assets/image/' . basename($locImg[0]))) ?>" alt="" loading="lazy">
+            <?php endif; ?>
             <div>
                 <h2><?= e(setting('store_visit_title', 'Visit our store')) ?></h2>
                 <p class="visit-addr"><?= icon('pin') ?><span><?= nl2br(e(setting('address'))) ?><?= setting('city') ? ', ' . e(setting('city')) : '' ?></span></p>
@@ -206,6 +218,7 @@ require __DIR__ . '/partials/header.php';
         </div>
     </section>
     <?php endif; ?>
+    </div>
 </main>
 <?php require __DIR__ . '/partials/finder.php'; ?>
 <?php require __DIR__ . '/partials/footer.php'; ?>

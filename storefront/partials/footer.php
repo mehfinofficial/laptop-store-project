@@ -15,8 +15,7 @@ $__wa    = preg_replace('/\D/', '', setting('whatsapp'));
     <div class="container footer-grid">
         <div>
             <h4><?= e(setting('store_name')) ?></h4>
-            <p><?= e(setting('tagline')) ?></p>
-            <p class="muted"><?= e(setting('footer_text')) ?></p>
+            <p class="footer-about"><strong>Visit us in <?= e(setting('city') ?: 'store') ?> or order online.</strong> <?= e(setting('store_name')) ?> sells laptops and accessories at clear prices. Every laptop is quality-checked and comes with warranty, we call to confirm every order before it ships, and you can pay on delivery.</p>
         </div>
         <div>
             <h4>Shop</h4>
